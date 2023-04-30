@@ -53,6 +53,7 @@ import org.eclipse.winery.model.ids.definitions.PolicyTypeId;
 import org.eclipse.winery.model.ids.definitions.RelationshipTypeId;
 import org.eclipse.winery.model.ids.definitions.RelationshipTypeImplementationId;
 import org.eclipse.winery.model.ids.definitions.RequirementTypeId;
+import org.eclipse.winery.model.ids.extensions.PatternRefinementModelId;
 import org.eclipse.winery.model.tosca.TArtifactTemplate;
 import org.eclipse.winery.model.tosca.TDefinitions;
 import org.eclipse.winery.model.tosca.TNodeTemplate;
@@ -500,6 +501,8 @@ public class YamlRepository extends AbstractFileBasedRepository {
                 requestedDefinitions.addPolicyTypes(definitions.getPolicyTypes());
             } else if (id instanceof InterfaceTypeId) {
                 requestedDefinitions.addInterfaceTypes(definitions.getInterfaceTypes());
+            } else if (id instanceof PatternRefinementModelId) {
+                requestedDefinitions.setNonStandardElements(new ArrayList<>(definitions.getPatternRefinementModels()));
             } else {
                 // we do not need to filter anything
                 return definitions;
@@ -999,9 +1002,9 @@ public class YamlRepository extends AbstractFileBasedRepository {
                                 try {
                                     id = constructor.newInstance(ns, xmlId);
                                 } catch (InstantiationException
-                                         | IllegalAccessException
-                                         | IllegalArgumentException
-                                         | InvocationTargetException e) {
+                                    | IllegalAccessException
+                                    | IllegalArgumentException
+                                    | InvocationTargetException e) {
                                     LOGGER.debug("Internal error at invocation of id constructor", e);
                                     // abort everything, return invalid result
                                     return res;

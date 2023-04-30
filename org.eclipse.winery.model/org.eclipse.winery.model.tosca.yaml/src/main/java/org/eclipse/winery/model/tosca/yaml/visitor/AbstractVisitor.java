@@ -61,7 +61,16 @@ import org.eclipse.winery.model.tosca.yaml.YTSubstitutionMappings;
 import org.eclipse.winery.model.tosca.yaml.YTTopologyTemplateDefinition;
 import org.eclipse.winery.model.tosca.yaml.YTTriggerDefinition;
 import org.eclipse.winery.model.tosca.yaml.YTVersion;
+import org.eclipse.winery.model.tosca.yaml.extensions.YOTAttributeMapping;
+import org.eclipse.winery.model.tosca.yaml.extensions.YOTBehaviorPatternMapping;
+import org.eclipse.winery.model.tosca.yaml.extensions.YOTDeploymentArtifactMapping;
+import org.eclipse.winery.model.tosca.yaml.extensions.YOTPatternRefinementModel;
+import org.eclipse.winery.model.tosca.yaml.extensions.YOTPermutationMapping;
+import org.eclipse.winery.model.tosca.yaml.extensions.YOTRelationMapping;
+import org.eclipse.winery.model.tosca.yaml.extensions.YOTStayMapping;
+import org.eclipse.winery.model.tosca.yaml.extensions.YOTTopologyFragmentRefinementModel;
 import org.eclipse.winery.model.tosca.yaml.support.Metadata;
+import org.eclipse.winery.model.tosca.yaml.support.YamlExtensionKeywords;
 
 import org.eclipse.jdt.annotation.NonNull;
 
@@ -328,7 +337,8 @@ public abstract class AbstractVisitor<R extends AbstractResult<R>, P extends Abs
             visitElement(node.getNodeTypes(), parameter, "node_types"),
             visitElement(node.getGroupTypes(), parameter, "group_types"),
             visitElement(node.getPolicyTypes(), parameter, "policy_types"),
-            visitElement(node.getTopologyTemplate(), parameter, "topology_template")
+            visitElement(node.getTopologyTemplate(), parameter, "topology_template"),
+            visitElement(node.getPatternRefinementModels(), parameter, YamlExtensionKeywords.PATTERN_REFINEMENT_MODELS)
         ));
     }
 
@@ -357,6 +367,44 @@ public abstract class AbstractVisitor<R extends AbstractResult<R>, P extends Abs
 
     @Override
     public R visit(Metadata node, P parameter) {
+        return null;
+    }
+
+    @Override
+    public R visit(YOTTopologyFragmentRefinementModel node, P parameter) {
+        return null;
+    }
+
+    @Override
+    public R visit(YOTPatternRefinementModel node, P parameter) { return null; }
+
+    @Override
+    public R visit(YOTAttributeMapping node, P parameter) {
+        return null;
+    }
+
+    @Override
+    public R visit(YOTBehaviorPatternMapping node, P parameter) {
+        return null;
+    }
+
+    @Override
+    public R visit(YOTDeploymentArtifactMapping node, P parameter) {
+        return null;
+    }
+
+    @Override
+    public R visit(YOTRelationMapping node, P parameter) {
+        return null;
+    }
+
+    @Override
+    public R visit(YOTStayMapping node, P parameter) {
+        return null;
+    }
+
+    @Override
+    public R visit(YOTPermutationMapping node, P parameter) {
         return null;
     }
 

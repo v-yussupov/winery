@@ -82,6 +82,7 @@ import org.eclipse.winery.model.tosca.TServiceTemplate;
 import org.eclipse.winery.model.tosca.TTag;
 import org.eclipse.winery.model.tosca.TTopologyTemplate;
 import org.eclipse.winery.model.tosca.TTriggerDefinition;
+import org.eclipse.winery.model.tosca.extensions.OTPatternRefinementModel;
 import org.eclipse.winery.model.tosca.extensions.kvproperties.AttributeDefinition;
 import org.eclipse.winery.model.tosca.extensions.kvproperties.ConstraintClauseKV;
 import org.eclipse.winery.model.tosca.extensions.kvproperties.ParameterDefinition;
@@ -124,6 +125,7 @@ import org.eclipse.winery.model.tosca.yaml.YTServiceTemplate;
 import org.eclipse.winery.model.tosca.yaml.YTSubstitutionMappings;
 import org.eclipse.winery.model.tosca.yaml.YTTopologyTemplateDefinition;
 import org.eclipse.winery.model.tosca.yaml.YTTriggerDefinition;
+import org.eclipse.winery.model.tosca.yaml.extensions.YOTPatternRefinementModel;
 import org.eclipse.winery.model.tosca.yaml.support.Defaults;
 import org.eclipse.winery.model.tosca.yaml.support.Metadata;
 import org.eclipse.winery.model.tosca.yaml.support.YTMapActivityDefinition;
@@ -175,7 +177,8 @@ public class FromCanonical {
             .setPolicyTypes(convert(node.getPolicyTypes()))
             .setInterfaceTypes(convert(node.getInterfaceTypes()))
             .setDataTypes(convert(node.getDataTypes()))
-            .setGroupTypes(convert(node.getGroupTypes()));
+            .setGroupTypes(convert(node.getGroupTypes()))
+            .setPatternRefinementModels(convert(node.getPatternRefinementModels()));
 
         if (node.getServiceTemplates().size() == 1) {
             builder.setTopologyTemplate(convert(node.getServiceTemplates().get(0)));
@@ -258,21 +261,25 @@ public class FromCanonical {
         if (Objects.isNull(node)) {
             return null;
         }
-        TTopologyTemplate topologyTemplate = node.getTopologyTemplate();
-        if (Objects.isNull(topologyTemplate)) {
+
+        return convert(node.getTopologyTemplate());
+    }
+
+    public YTTopologyTemplateDefinition convert(TTopologyTemplate node) {
+        if (Objects.isNull(node)) {
             return null;
         }
         YTTopologyTemplateDefinition.Builder builder = new YTTopologyTemplateDefinition.Builder()
-            .setDescription(convertDocumentation(topologyTemplate.getDocumentation()))
-            .setNodeTemplates(convert(topologyTemplate.getNodeTemplates(), topologyTemplate.getRelationshipTemplates()))
-            .setRelationshipTemplates(convert(topologyTemplate.getRelationshipTemplates()))
-            .setPolicies(convert(topologyTemplate.getPolicies()))
-            .setGroups(convert(topologyTemplate.getGroups()));
-        if (topologyTemplate.getInputs() != null) {
-            builder.setInputs(convert(topologyTemplate.getInputs()));
+            .setDescription(convertDocumentation(node.getDocumentation()))
+            .setNodeTemplates(convert(node.getNodeTemplates(), node.getRelationshipTemplates()))
+            .setRelationshipTemplates(convert(node.getRelationshipTemplates()))
+            .setPolicies(convert(node.getPolicies()))
+            .setGroups(convert(node.getGroups()));
+        if (node.getInputs() != null) {
+            builder.setInputs(convert(node.getInputs()));
         }
-        if (topologyTemplate.getOutputs() != null) {
-            builder.setOutputs(convert(topologyTemplate.getOutputs()));
+        if (node.getOutputs() != null) {
+            builder.setOutputs(convert(node.getOutputs()));
         }
         return builder.build();
     }
@@ -1136,6 +1143,8 @@ public class FromCanonical {
                     return convert((TDeploymentArtifact) node).entrySet().stream();
                 } else if (node instanceof TParameter) {
                     return convert((TParameter) node).entrySet().stream();
+                } else if (node instanceof OTPatternRefinementModel) {
+                    return convert((OTPatternRefinementModel) node).entrySet().stream();
                 }
                 throw new AssertionError();
             })
@@ -1153,6 +1162,23 @@ public class FromCanonical {
         return Collections.singletonMap(
             nodeFullName,
             builder.setConstraints(convertConstraints(node.getConstraints())).build()
+        );
+    }
+
+    public Map<String, YOTPatternRefinementModel> convert(OTPatternRefinementModel node) {
+        if (Objects.isNull(node)) {
+            return new HashMap<>();
+        }
+        YOTPatternRefinementModel.Builder builder = new YOTPatternRefinementModel.Builder();
+        builder.setIsPdrm(node.isPdrm());
+        builder.addMetadata("targetNamespace", node.getTargetNamespace());
+        
+        builder.setDetector(convert(node.getDetector()));
+        builder.setRefinementStructure(convert(node.getRefinementStructure()));
+
+        return Collections.singletonMap(
+            node.getName(),
+            builder.build()
         );
     }
 

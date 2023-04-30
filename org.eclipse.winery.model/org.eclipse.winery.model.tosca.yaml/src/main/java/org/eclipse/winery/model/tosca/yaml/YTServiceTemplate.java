@@ -20,6 +20,7 @@ import java.util.List;
 import java.util.Map;
 import java.util.Objects;
 
+import org.eclipse.winery.model.tosca.yaml.extensions.YOTPatternRefinementModel;
 import org.eclipse.winery.model.tosca.yaml.support.Metadata;
 import org.eclipse.winery.model.tosca.yaml.support.YTMapImportDefinition;
 import org.eclipse.winery.model.tosca.yaml.visitor.AbstractParameter;
@@ -46,6 +47,7 @@ public class YTServiceTemplate implements VisitorNode {
     private Map<String, YTGroupType> groupTypes;
     private Map<String, YTPolicyType> policyTypes;
     private YTTopologyTemplateDefinition topologyTemplate;
+    private Map<String, YOTPatternRefinementModel> patternRefinementModels;
 
     protected YTServiceTemplate(Builder builder) {
         this.setToscaDefinitionsVersion(builder.toscaDefinitionsVersion);
@@ -63,6 +65,7 @@ public class YTServiceTemplate implements VisitorNode {
         this.setGroupTypes(builder.groupTypes);
         this.setPolicyTypes(builder.policyTypes);
         this.setTopologyTemplate(builder.topologyTemplate);
+        this.setPatternRefinementModels(builder.patternRefinementModels);
     }
 
     @Override
@@ -287,6 +290,19 @@ public class YTServiceTemplate implements VisitorNode {
         this.policyTypes = policyTypes;
     }
 
+    @NonNull
+    public Map<String, YOTPatternRefinementModel> getPatternRefinementModels() {
+        if (this.patternRefinementModels == null) {
+            this.patternRefinementModels = new LinkedHashMap<>();
+        }
+
+        return patternRefinementModels;
+    }
+
+    public void setPatternRefinementModels(Map<String, YOTPatternRefinementModel> patternRefinementModels) {
+        this.patternRefinementModels = patternRefinementModels;
+    }
+
     public YTTopologyTemplateDefinition getTopologyTemplate() {
         return topologyTemplate;
     }
@@ -315,6 +331,7 @@ public class YTServiceTemplate implements VisitorNode {
         private Map<String, YTGroupType> groupTypes;
         private Map<String, YTPolicyType> policyTypes;
         private YTTopologyTemplateDefinition topologyTemplate;
+        private Map<String, YOTPatternRefinementModel> patternRefinementModels;
 
         public Builder(String toscaDefinitionsVersion) {
             this.toscaDefinitionsVersion = toscaDefinitionsVersion;
@@ -395,6 +412,11 @@ public class YTServiceTemplate implements VisitorNode {
 
         public Builder setTopologyTemplate(YTTopologyTemplateDefinition topologyTemplate) {
             this.topologyTemplate = topologyTemplate;
+            return this;
+        }
+
+        public Builder setPatternRefinementModels(Map<String, YOTPatternRefinementModel> patternRefinementModels) {
+            this.patternRefinementModels = patternRefinementModels;
             return this;
         }
 

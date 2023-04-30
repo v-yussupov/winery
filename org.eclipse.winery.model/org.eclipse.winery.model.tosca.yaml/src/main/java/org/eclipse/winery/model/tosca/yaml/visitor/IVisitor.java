@@ -55,6 +55,14 @@ import org.eclipse.winery.model.tosca.yaml.YTSubstitutionMappings;
 import org.eclipse.winery.model.tosca.yaml.YTTopologyTemplateDefinition;
 import org.eclipse.winery.model.tosca.yaml.YTTriggerDefinition;
 import org.eclipse.winery.model.tosca.yaml.YTVersion;
+import org.eclipse.winery.model.tosca.yaml.extensions.YOTAttributeMapping;
+import org.eclipse.winery.model.tosca.yaml.extensions.YOTBehaviorPatternMapping;
+import org.eclipse.winery.model.tosca.yaml.extensions.YOTDeploymentArtifactMapping;
+import org.eclipse.winery.model.tosca.yaml.extensions.YOTPatternRefinementModel;
+import org.eclipse.winery.model.tosca.yaml.extensions.YOTPermutationMapping;
+import org.eclipse.winery.model.tosca.yaml.extensions.YOTRelationMapping;
+import org.eclipse.winery.model.tosca.yaml.extensions.YOTStayMapping;
+import org.eclipse.winery.model.tosca.yaml.extensions.YOTTopologyFragmentRefinementModel;
 import org.eclipse.winery.model.tosca.yaml.support.Metadata;
 
 public interface IVisitor<R extends AbstractResult, P extends AbstractParameter> {
@@ -143,4 +151,20 @@ public interface IVisitor<R extends AbstractResult, P extends AbstractParameter>
     R visit(YTVersion node, P parameter);
 
     R visit(Metadata node, P parameter);
+
+    R visit(YOTTopologyFragmentRefinementModel node, P parameter);
+
+    R visit(YOTPatternRefinementModel node, P parameter);
+
+    R visit(YOTAttributeMapping node, P parameter);
+
+    R visit(YOTBehaviorPatternMapping node, P parameter);
+
+    R visit(YOTDeploymentArtifactMapping node, P parameter);
+
+    R visit(YOTRelationMapping node, P parameter);
+
+    R visit(YOTStayMapping node, P parameter);
+
+    R visit(YOTPermutationMapping node, P parameter);
 }

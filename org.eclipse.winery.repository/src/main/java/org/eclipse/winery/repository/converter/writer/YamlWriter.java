@@ -74,6 +74,14 @@ import org.eclipse.winery.model.tosca.yaml.YTSubstitutionMappings;
 import org.eclipse.winery.model.tosca.yaml.YTTopologyTemplateDefinition;
 import org.eclipse.winery.model.tosca.yaml.YTTriggerDefinition;
 import org.eclipse.winery.model.tosca.yaml.YTVersion;
+import org.eclipse.winery.model.tosca.yaml.extensions.YOTAttributeMapping;
+import org.eclipse.winery.model.tosca.yaml.extensions.YOTBehaviorPatternMapping;
+import org.eclipse.winery.model.tosca.yaml.extensions.YOTDeploymentArtifactMapping;
+import org.eclipse.winery.model.tosca.yaml.extensions.YOTPatternRefinementModel;
+import org.eclipse.winery.model.tosca.yaml.extensions.YOTPermutationMapping;
+import org.eclipse.winery.model.tosca.yaml.extensions.YOTRelationMapping;
+import org.eclipse.winery.model.tosca.yaml.extensions.YOTStayMapping;
+import org.eclipse.winery.model.tosca.yaml.extensions.YOTTopologyFragmentRefinementModel;
 import org.eclipse.winery.model.tosca.yaml.support.Metadata;
 import org.eclipse.winery.model.tosca.yaml.support.YTListString;
 import org.eclipse.winery.model.tosca.yaml.support.YTMapActivityDefinition;
@@ -82,6 +90,7 @@ import org.eclipse.winery.model.tosca.yaml.support.YTMapObject;
 import org.eclipse.winery.model.tosca.yaml.support.YTMapPropertyFilterDefinition;
 import org.eclipse.winery.model.tosca.yaml.support.YTMapRequirementAssignment;
 import org.eclipse.winery.model.tosca.yaml.support.YTMapRequirementDefinition;
+import org.eclipse.winery.model.tosca.yaml.support.YamlExtensionKeywords;
 import org.eclipse.winery.model.tosca.yaml.support.YamlSpecKeywords;
 import org.eclipse.winery.model.tosca.yaml.tosca.datatypes.Credential;
 import org.eclipse.winery.model.tosca.yaml.visitor.AbstractParameter;
@@ -162,7 +171,8 @@ public class YamlWriter extends AbstractVisitor<YamlPrinter, YamlWriter.Paramete
             .print(printMap(YamlSpecKeywords.NODE_TYPES, node.getNodeTypes(), parameter))
             .print(printMap(YamlSpecKeywords.GROUP_TYPES, node.getGroupTypes(), parameter))
             .print(printMap(YamlSpecKeywords.POLICY_TYPES, node.getPolicyTypes(), parameter))
-            .print(printVisitorNode(node.getTopologyTemplate(), new Parameter(parameter.getIndent()).addContext(YamlSpecKeywords.TOPOLOGY_TEMPLATE)));
+            .print(printVisitorNode(node.getTopologyTemplate(), new Parameter(parameter.getIndent()).addContext(YamlSpecKeywords.TOPOLOGY_TEMPLATE)))
+            .print(printMap(YamlExtensionKeywords.PATTERN_REFINEMENT_MODELS, node.getPatternRefinementModels(), parameter));
     }
 
     public YamlPrinter visit(YTTopologyTemplateDefinition node, Parameter parameter) {
@@ -610,6 +620,63 @@ public class YamlWriter extends AbstractVisitor<YamlPrinter, YamlWriter.Paramete
             // .printKeyValue("type", node.getType())
             .print(printMap(YamlSpecKeywords.PROPERTIES, node.getProperties(), parameter))
             .print(printMap(YamlSpecKeywords.INTERFACES, node.getInterfaces(), parameter));
+    }
+
+    public YamlPrinter visit(YOTTopologyFragmentRefinementModel node, Parameter parameter) {
+        return new YamlPrinter(parameter.getIndent());
+        //.print(printMap(YamlSpecKeywords.PROPERTIES, node.getProperties(), parameter))
+        //.print(printMap(YamlSpecKeywords.INTERFACES, node.getInterfaces(), parameter));
+    }
+
+    public YamlPrinter visit(YOTPatternRefinementModel node, Parameter parameter) {
+        YamlPrinter printer = new YamlPrinter(parameter.getIndent())
+            .printKeyValue(YamlExtensionKeywords.IS_PDRM, node.isPdrm());
+
+        if (Objects.nonNull(node.getDetector()) && !node.getDetector().getNodeTemplates().isEmpty() && !node.getDetector().getRelationshipTemplates().isEmpty()) {
+            printer.print(printVisitorNode(node.getDetector(), parameter.addContext(YamlExtensionKeywords.DETECTOR)));
+        }
+
+        if (Objects.nonNull(node.getRefinementStructure()) && !node.getRefinementStructure().getNodeTemplates().isEmpty() && !node.getRefinementStructure().getRelationshipTemplates().isEmpty()) {
+            printer.print(printVisitorNode(node.getRefinementStructure(), parameter.addContext(YamlExtensionKeywords.REFINEMENT_STRUCTURE)));
+        }
+
+        return printer;
+    }
+
+    public YamlPrinter visit(YOTAttributeMapping node, Parameter parameter) {
+        return new YamlPrinter(parameter.getIndent());
+        //.print(printMap(YamlSpecKeywords.PROPERTIES, node.getProperties(), parameter))
+        //.print(printMap(YamlSpecKeywords.INTERFACES, node.getInterfaces(), parameter));
+    }
+
+    public YamlPrinter visit(YOTBehaviorPatternMapping node, Parameter parameter) {
+        return new YamlPrinter(parameter.getIndent());
+        //.print(printMap(YamlSpecKeywords.PROPERTIES, node.getProperties(), parameter))
+        //.print(printMap(YamlSpecKeywords.INTERFACES, node.getInterfaces(), parameter));
+    }
+
+    public YamlPrinter visit(YOTDeploymentArtifactMapping node, Parameter parameter) {
+        return new YamlPrinter(parameter.getIndent());
+        //.print(printMap(YamlSpecKeywords.PROPERTIES, node.getProperties(), parameter))
+        //.print(printMap(YamlSpecKeywords.INTERFACES, node.getInterfaces(), parameter));
+    }
+
+    public YamlPrinter visit(YOTRelationMapping node, Parameter parameter) {
+        return new YamlPrinter(parameter.getIndent());
+        //.print(printMap(YamlSpecKeywords.PROPERTIES, node.getProperties(), parameter))
+        //.print(printMap(YamlSpecKeywords.INTERFACES, node.getInterfaces(), parameter));
+    }
+
+    public YamlPrinter visit(YOTStayMapping node, Parameter parameter) {
+        return new YamlPrinter(parameter.getIndent());
+        //.print(printMap(YamlSpecKeywords.PROPERTIES, node.getProperties(), parameter))
+        //.print(printMap(YamlSpecKeywords.INTERFACES, node.getInterfaces(), parameter));
+    }
+
+    public YamlPrinter visit(YOTPermutationMapping node, Parameter parameter) {
+        return new YamlPrinter(parameter.getIndent());
+        //.print(printMap(YamlSpecKeywords.PROPERTIES, node.getProperties(), parameter))
+        //.print(printMap(YamlSpecKeywords.INTERFACES, node.getInterfaces(), parameter));
     }
 
     public YamlPrinter visit(YTPropertyFilterDefinition node, Parameter parameter) {

@@ -81,6 +81,7 @@ import org.eclipse.winery.model.tosca.yaml.YTSubstitutionMappings;
 import org.eclipse.winery.model.tosca.yaml.YTTopologyTemplateDefinition;
 import org.eclipse.winery.model.tosca.yaml.YTTriggerDefinition;
 import org.eclipse.winery.model.tosca.yaml.YTVersion;
+import org.eclipse.winery.model.tosca.yaml.extensions.YOTPatternRefinementModel;
 import org.eclipse.winery.model.tosca.yaml.support.Metadata;
 import org.eclipse.winery.model.tosca.yaml.support.YTListString;
 import org.eclipse.winery.model.tosca.yaml.support.YTMapActivityDefinition;
@@ -90,6 +91,7 @@ import org.eclipse.winery.model.tosca.yaml.support.YTMapPolicyDefinition;
 import org.eclipse.winery.model.tosca.yaml.support.YTMapPropertyFilterDefinition;
 import org.eclipse.winery.model.tosca.yaml.support.YTMapRequirementAssignment;
 import org.eclipse.winery.model.tosca.yaml.support.YTMapRequirementDefinition;
+import org.eclipse.winery.model.tosca.yaml.support.YamlExtensionKeywords;
 import org.eclipse.winery.model.tosca.yaml.support.YamlSpecKeywords;
 import org.eclipse.winery.model.tosca.yaml.tosca.datatypes.Credential;
 import org.eclipse.winery.repository.converter.validator.FieldValidator;
@@ -194,7 +196,8 @@ public class YamlBuilder {
             .setPolicyTypes(buildMap(map, YamlSpecKeywords.POLICY_TYPES, this::buildPolicyType, parameter))
             .setTopologyTemplate(buildTopologyTemplate(map.get(YamlSpecKeywords.TOPOLOGY_TEMPLATE),
                 parameter.copy().addContext(YamlSpecKeywords.TOPOLOGY_TEMPLATE)
-            ));
+            ))
+            .setPatternRefinementModels(buildMap(map, YamlExtensionKeywords.PATTERN_REFINEMENT_MODELS, this::buildPatternRefinementModel, parameter));
         if (this.exception.hasException()) {
             throw this.exception;
         }
@@ -1324,6 +1327,33 @@ public class YamlBuilder {
             .setCapabilities(buildMap(map, YamlSpecKeywords.CAPABILITIES, this::buildStringList, parameter))
             .setRequirements(buildMap(map, YamlSpecKeywords.REQUIREMENTS, this::buildStringList, parameter))
             .build();
+    }
+
+    @Nullable
+    public YOTPatternRefinementModel buildPatternRefinementModel(Object object, Parameter<YOTPatternRefinementModel> parameter) {
+        if (Objects.isNull(object)) {
+            return null;
+        }
+        @SuppressWarnings("unchecked")
+        Map<String, Object> map = (Map<String, Object>) object;
+        YOTPatternRefinementModel.Builder builder = new YOTPatternRefinementModel.Builder();
+
+        builder.setIsPdrm(Boolean.parseBoolean(stringValue(map.get(YamlExtensionKeywords.IS_PDRM))));
+        builder.setDetector(
+            buildTopologyTemplate(
+                map.get(YamlExtensionKeywords.DETECTOR),
+                new Parameter<Object>(parameter.getContext()).addContext(YamlExtensionKeywords.DETECTOR)
+            )
+        );
+
+        builder.setRefinementStructure(
+            buildTopologyTemplate(
+                map.get(YamlExtensionKeywords.REFINEMENT_STRUCTURE),
+                new Parameter<Object>(parameter.getContext()).addContext(YamlExtensionKeywords.REFINEMENT_STRUCTURE)
+            )
+        );
+
+        return builder.build();
     }
 
     @Nullable
