@@ -865,6 +865,9 @@ public class ToCanonical {
         }
         String typeName = fixNamespaceDuplication(id, node.getMetadata().get("targetNamespace"));
         TPolicyType.Builder builder = new TPolicyType.Builder(typeName);
+        if (Objects.nonNull(node.getMetadata().get("targetNamespace"))) {
+            builder.setTargetNamespace(node.getMetadata().get("targetNamespace"));
+        }
         fillEntityTypeProperties(node, builder);
         builder.setAppliesTo(convertTargets(node.getTargets()));
         builder.setTriggers(

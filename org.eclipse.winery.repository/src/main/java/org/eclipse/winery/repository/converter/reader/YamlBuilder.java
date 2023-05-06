@@ -929,6 +929,7 @@ public class YamlBuilder {
         return buildEntityType(object, new Parameter<YTPolicyType.Builder>(parameter.getContext())
             .setBuilder(new YTPolicyType.Builder())
             .setClazz(YTPolicyType.class))
+            .setMetadata(buildMetadata(map.get(YamlSpecKeywords.METADATA)))
             .setTargets(buildListQName(buildListString(map.get(YamlSpecKeywords.TARGETS),
                 new Parameter<List<String>>(parameter.getContext()).addContext(YamlSpecKeywords.TARGETS)
             )))

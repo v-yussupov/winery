@@ -392,7 +392,7 @@ public class YamlWriter extends AbstractVisitor<YamlPrinter, YamlWriter.Paramete
     public YamlPrinter visit(YTPolicyType node, Parameter parameter) {
         YamlPrinter printer = new YamlPrinter(parameter.getIndent())
             .printKeyValue(YamlSpecKeywords.TARGETS, node.getTargets());
-
+        
         Map<String, YTTriggerDefinition> validTriggers = node.getTriggers().entrySet()
             .stream()
             .filter(entry -> Objects.nonNull(entry.getValue().getEvent()))

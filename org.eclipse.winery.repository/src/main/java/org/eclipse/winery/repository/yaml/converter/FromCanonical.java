@@ -199,6 +199,11 @@ public class FromCanonical {
             builder.addMetadata("targetNamespace", node.getTargetNamespace());
         }
 
+        // extra check for policy types created via PatternAtlasRepository
+        node.getServiceTemplateOrNodeTypeOrNodeTypeImplementation().stream()
+            .filter(entry -> entry instanceof TPolicyType)
+            .forEach(entry -> builder.setPolicyTypes(convert((TPolicyType) entry)));
+
         if (convertImports) {
             List<YTMapImportDefinition> imports = convertImports();
             YTMapImportDefinition existingImports = prepareExistingImports(node.getImportDefinitions());
@@ -547,17 +552,25 @@ public class FromCanonical {
 
     @NonNull
     public Map<String, YTPolicyType> convert(TPolicyType node) {
-        if (Objects.isNull(node) || node.getAppliesTo().isEmpty()) {
+        if (Objects.isNull(node)) {
             return new LinkedHashMap<>();
         }
 
         YTPolicyType.Builder builder = new YTPolicyType.Builder();
-        builder = builder.setTargets(
-            node.getAppliesTo()
-                .stream()
-                .map(TPolicyType.NodeTypeReference::getTypeRef)
-                .collect(Collectors.toList())
-        );
+        builder.addMetadata("targetNamespace", node.getTargetNamespace());
+
+        if (Objects.isNull(node.getDerivedFrom())) {
+            builder.setDerivedFrom(new QName("tosca.policies", "Root"));
+        }
+        
+        if (!node.getAppliesTo().isEmpty()) {
+            builder = builder.setTargets(
+                node.getAppliesTo()
+                    .stream()
+                    .map(TPolicyType.NodeTypeReference::getTypeRef)
+                    .collect(Collectors.toList())
+            );
+        }
 
         builder.setTriggers(
             node.getTriggers()
