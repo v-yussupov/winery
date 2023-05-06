@@ -17,6 +17,7 @@ package org.eclipse.winery.repository.converter.reader;
 import java.text.SimpleDateFormat;
 import java.util.ArrayList;
 import java.util.Date;
+import java.util.HashMap;
 import java.util.LinkedHashMap;
 import java.util.LinkedHashSet;
 import java.util.List;
@@ -81,7 +82,12 @@ import org.eclipse.winery.model.tosca.yaml.YTSubstitutionMappings;
 import org.eclipse.winery.model.tosca.yaml.YTTopologyTemplateDefinition;
 import org.eclipse.winery.model.tosca.yaml.YTTriggerDefinition;
 import org.eclipse.winery.model.tosca.yaml.YTVersion;
+import org.eclipse.winery.model.tosca.yaml.extensions.YOTBehaviorPatternMapping;
 import org.eclipse.winery.model.tosca.yaml.extensions.YOTPatternRefinementModel;
+import org.eclipse.winery.model.tosca.yaml.extensions.YOTPrmMapping;
+import org.eclipse.winery.model.tosca.yaml.extensions.YOTRelationDirection;
+import org.eclipse.winery.model.tosca.yaml.extensions.YOTRelationMapping;
+import org.eclipse.winery.model.tosca.yaml.extensions.YOTStayMapping;
 import org.eclipse.winery.model.tosca.yaml.support.Metadata;
 import org.eclipse.winery.model.tosca.yaml.support.YTListString;
 import org.eclipse.winery.model.tosca.yaml.support.YTMapActivityDefinition;
@@ -1337,23 +1343,111 @@ public class YamlBuilder {
         @SuppressWarnings("unchecked")
         Map<String, Object> map = (Map<String, Object>) object;
         YOTPatternRefinementModel.Builder builder = new YOTPatternRefinementModel.Builder();
-
         builder.setIsPdrm(Boolean.parseBoolean(stringValue(map.get(YamlExtensionKeywords.IS_PDRM))));
-        builder.setDetector(
-            buildTopologyTemplate(
-                map.get(YamlExtensionKeywords.DETECTOR),
-                new Parameter<Object>(parameter.getContext()).addContext(YamlExtensionKeywords.DETECTOR)
-            )
-        );
 
-        builder.setRefinementStructure(
-            buildTopologyTemplate(
-                map.get(YamlExtensionKeywords.REFINEMENT_STRUCTURE),
-                new Parameter<Object>(parameter.getContext()).addContext(YamlExtensionKeywords.REFINEMENT_STRUCTURE)
-            )
+        YTTopologyTemplateDefinition detector = buildTopologyTemplate(
+            map.get(YamlExtensionKeywords.DETECTOR),
+            new Parameter<Object>(parameter.getContext()).addContext(YamlExtensionKeywords.DETECTOR)
         );
+        builder.setDetector(detector);
+
+        YTTopologyTemplateDefinition refinementStructure = buildTopologyTemplate(
+            map.get(YamlExtensionKeywords.REFINEMENT_STRUCTURE),
+            new Parameter<Object>(parameter.getContext()).addContext(YamlExtensionKeywords.REFINEMENT_STRUCTURE)
+        );
+        builder.setRefinementStructure(refinementStructure);
+
+        Map<String, YOTStayMapping> stayMappings = buildStayMappings(map.get(YamlExtensionKeywords.STAY_MAPPINGS), detector, refinementStructure);
+        builder.setStayMappings(stayMappings);
+
+        Map<String, YOTBehaviorPatternMapping> behaviorMappings = buildBehaviorMappings(map.get(YamlExtensionKeywords.BEHAVIOR_MAPPINGS), detector, refinementStructure);
+        builder.setBehaviorPatternMappings(behaviorMappings);
+
+        Map<String, YOTRelationMapping> relationMappings = buildRelationMappings(map.get(YamlExtensionKeywords.RELATION_MAPPINGS), detector, refinementStructure);
+        builder.setRelationMappings(relationMappings);
 
         return builder.build();
+    }
+
+    private Map<String, YOTStayMapping> buildStayMappings(Object object, YTTopologyTemplateDefinition detector, YTTopologyTemplateDefinition refinementStructure) {
+        if (Objects.isNull(object)) {
+            return null;
+        }
+        Map<String, YOTStayMapping> result = new HashMap<>();
+
+        @SuppressWarnings("unchecked")
+        Map<String, Object> map = (Map<String, Object>) object;
+        for (Map.Entry<String, Object> entry : map.entrySet()) {
+            YOTStayMapping.Builder builder = new YOTStayMapping.Builder();
+            buildPrmMappingProperties(builder, entry.getValue(), detector, refinementStructure);
+            result.put(entry.getKey(), builder.build());
+        }
+
+        return result;
+    }
+
+    private Map<String, YOTRelationMapping> buildRelationMappings(Object object, YTTopologyTemplateDefinition detector, YTTopologyTemplateDefinition refinementStructure) {
+        if (Objects.isNull(object)) {
+            return null;
+        }
+        Map<String, YOTRelationMapping> result = new HashMap<>();
+
+        @SuppressWarnings("unchecked")
+        Map<String, Object> map = (Map<String, Object>) object;
+        for (Map.Entry<String, Object> entry : map.entrySet()) {
+            YOTRelationMapping.Builder builder = new YOTRelationMapping.Builder();
+            @SuppressWarnings("unchecked")
+            Map<String, String> entryVal = (Map<String, String>) entry.getValue();
+
+            if (Objects.nonNull(entryVal.get(YamlExtensionKeywords.DIRECTION))) {
+                builder.setDirection(YOTRelationDirection.fromValue(entryVal.get(YamlExtensionKeywords.DIRECTION)));
+            }
+
+            if (Objects.nonNull(entryVal.get(YamlExtensionKeywords.RELATION_TYPE))) {
+                builder.setRelationType(QName.valueOf(entryVal.get(YamlExtensionKeywords.RELATION_TYPE)));
+            }
+
+            if (Objects.nonNull(entryVal.get(YamlExtensionKeywords.VALID_SOURCE_OR_TARGET))) {
+                builder.setValidSourceOrTarget(QName.valueOf(entryVal.get(YamlExtensionKeywords.VALID_SOURCE_OR_TARGET)));
+            }
+
+            buildPrmMappingProperties(builder, entry.getValue(), detector, refinementStructure);
+            result.put(entry.getKey(), builder.build());
+        }
+
+        return result;
+    }
+
+    private Map<String, YOTBehaviorPatternMapping> buildBehaviorMappings(Object object, YTTopologyTemplateDefinition detector, YTTopologyTemplateDefinition refinementStructure) {
+        if (Objects.isNull(object)) {
+            return null;
+        }
+        Map<String, YOTBehaviorPatternMapping> result = new HashMap<>();
+
+        @SuppressWarnings("unchecked")
+        Map<String, Object> map = (Map<String, Object>) object;
+        for (Map.Entry<String, Object> entry : map.entrySet()) {
+            YOTBehaviorPatternMapping.Builder builder = new YOTBehaviorPatternMapping.Builder();
+            buildPrmMappingProperties(builder, entry.getValue(), detector, refinementStructure);
+            result.put(entry.getKey(), builder.build());
+        }
+
+        return result;
+    }
+
+    private <Builder extends YOTPrmMapping.Builder<Builder>> void buildPrmMappingProperties(Builder builder, Object entry, YTTopologyTemplateDefinition detector, YTTopologyTemplateDefinition refinementStructure) {
+        @SuppressWarnings("unchecked")
+        Map<String, String> entryVal = (Map<String, String>) entry;
+        String detectorNodeId = entryVal.get(YamlExtensionKeywords.DETECTOR_NODE);
+        String refinementNodeId = entryVal.get(YamlExtensionKeywords.REFINEMENT_NODE);
+
+        if (Objects.nonNull(detector.getNodeTemplates().get(detectorNodeId)) && Objects.nonNull(refinementStructure.getNodeTemplates().get(refinementNodeId))) {
+            builder.setDetectorModelNode(Map.entry(detectorNodeId, detector.getNodeTemplates().get(detectorNodeId)));
+            builder.setRefinementModelNode(Map.entry(refinementNodeId, refinementStructure.getNodeTemplates().get(refinementNodeId)));
+        } else if (Objects.nonNull(detector.getRelationshipTemplates().get(detectorNodeId)) && Objects.nonNull(refinementStructure.getRelationshipTemplates().get(refinementNodeId))) {
+            builder.setDetectorRelationshipNode(Map.entry(detectorNodeId, detector.getRelationshipTemplates().get(detectorNodeId)));
+            builder.setRefinementRelationshipNode(Map.entry(refinementNodeId, refinementStructure.getRelationshipTemplates().get(refinementNodeId)));
+        }
     }
 
     @Nullable

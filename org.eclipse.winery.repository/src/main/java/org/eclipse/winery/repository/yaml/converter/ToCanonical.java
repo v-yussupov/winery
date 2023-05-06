@@ -79,10 +79,15 @@ import org.eclipse.winery.model.tosca.TTopologyTemplate;
 import org.eclipse.winery.model.tosca.TTriggerDefinition;
 import org.eclipse.winery.model.tosca.extensions.OTBehaviorPatternMapping;
 import org.eclipse.winery.model.tosca.extensions.OTPatternRefinementModel;
+import org.eclipse.winery.model.tosca.extensions.OTPrmMapping;
 import org.eclipse.winery.model.tosca.extensions.OTRefinementModel;
+import org.eclipse.winery.model.tosca.extensions.OTRelationDirection;
+import org.eclipse.winery.model.tosca.extensions.OTRelationMapping;
+import org.eclipse.winery.model.tosca.extensions.OTStayMapping;
 import org.eclipse.winery.model.tosca.extensions.OTTopologyFragmentRefinementModel;
 import org.eclipse.winery.model.tosca.extensions.kvproperties.AttributeDefinition;
 import org.eclipse.winery.model.tosca.extensions.kvproperties.ConstraintClauseKV;
+import org.eclipse.winery.model.tosca.extensions.kvproperties.OTPropertyKV;
 import org.eclipse.winery.model.tosca.extensions.kvproperties.ParameterDefinition;
 import org.eclipse.winery.model.tosca.yaml.YTActivityDefinition;
 import org.eclipse.winery.model.tosca.yaml.YTArtifactDefinition;
@@ -120,7 +125,10 @@ import org.eclipse.winery.model.tosca.yaml.YTTopologyTemplateDefinition;
 import org.eclipse.winery.model.tosca.yaml.YTTriggerDefinition;
 import org.eclipse.winery.model.tosca.yaml.extensions.YOTBehaviorPatternMapping;
 import org.eclipse.winery.model.tosca.yaml.extensions.YOTPatternRefinementModel;
+import org.eclipse.winery.model.tosca.yaml.extensions.YOTPrmMapping;
 import org.eclipse.winery.model.tosca.yaml.extensions.YOTRefinementModel;
+import org.eclipse.winery.model.tosca.yaml.extensions.YOTRelationMapping;
+import org.eclipse.winery.model.tosca.yaml.extensions.YOTStayMapping;
 import org.eclipse.winery.model.tosca.yaml.extensions.YOTTopologyFragmentRefinementModel;
 import org.eclipse.winery.model.tosca.yaml.support.Metadata;
 import org.eclipse.winery.model.tosca.yaml.support.ValueHelper;
@@ -1185,8 +1193,18 @@ public class ToCanonical {
 
     private <Builder extends OTTopologyFragmentRefinementModel.RefinementBuilder<Builder>, Node extends YOTTopologyFragmentRefinementModel> void fillOTTopologyFragmentRefinementModelProperties(Builder builder, Node node, String name) {
         builder.setRefinementStructure(convert(node.getRefinementStructure()));
+        builder.setStayMappings(
+            node.getStayMappings().entrySet().stream()
+                .map(entry -> {
+                    if (entry.getValue() != null) {
+                        return convert(entry.getKey(), entry.getValue());
+                    } else {
+                        return null;
+                    }
+                }).filter(Objects::nonNull)
+                .collect(Collectors.toList())
+        );
         //builder.setDeploymentArtifactMappings(convertList(node.getDeploymentArtifactMappings(), this::convert));
-        //builder.setStayMappings(convertList(node.getStayMappings(), this::convert));
         //builder.setPermutationMappings(convertList(node.getPermutationMappings(), this::convert));
         //builder.setPermutationOptions(convertList(node.getPermutationOptions(), this::convert));
         //builder.setAttributeMappings(convertList(node.getAttributeMappings(), this::convert));
@@ -1198,8 +1216,19 @@ public class ToCanonical {
     fillOTRefinementModelProperties(Builder builder, Node node, String name) {
         builder.setName(name);
         builder.setDetector(convert(node.getDetector()));
+        builder.setRelationMappings(
+            node.getRelationMappings().entrySet().stream()
+                .map(entry -> {
+                    if (entry.getValue() != null) {
+                        return convert(entry.getKey(), entry.getValue());
+                    } else {
+                        return null;
+                    }
+                }).filter(Objects::nonNull)
+                .collect(Collectors.toList())
+        );
+
         //builder.setTargetNamespace(node.getTargetNamespace());
-        //builder.setRelationMappings(convertList(node.getRelationMappings(), this::convert));
         //builder.setPermutationMappings(convertList(node.getPermutationMappings(), this::convert));
         //fillExtensibleElementsProperties(builder, value);
     }
@@ -1207,9 +1236,35 @@ public class ToCanonical {
     private OTBehaviorPatternMapping convert(String id, YOTBehaviorPatternMapping node) {
         OTBehaviorPatternMapping.Builder builder = new OTBehaviorPatternMapping.Builder(id);
         builder.setBehaviorPattern(node.getBehaviorPattern());
-        //builder.setProperty(convert(node.getProperty()));
-        //fillOTPrmMappingProperties(builder, node);
+        builder.setProperty(new OTPropertyKV(node.getProperty().getKey(), node.getProperty().getValue()));
+        fillOTPrmMappingProperties(builder, node);
         return builder.build();
+    }
+
+    private OTStayMapping convert(String id, YOTStayMapping node) {
+        OTStayMapping.Builder builder = new OTStayMapping.Builder(id);
+        fillOTPrmMappingProperties(builder, node);
+        return builder.build();
+    }
+
+    private OTRelationMapping convert(String id, YOTRelationMapping node) {
+        OTRelationMapping.Builder builder = new OTRelationMapping.Builder(id);
+        builder.setDirection(OTRelationDirection.fromValue(node.getDirection().value()));
+        builder.setRelationType(node.getRelationType());
+        builder.setValidSourceOrTarget(node.getValidSourceOrTarget());
+        fillOTPrmMappingProperties(builder, node);
+        return builder.build();
+    }
+
+    private <Builder extends OTPrmMapping.Builder<Builder>, Node extends YOTPrmMapping> void fillOTPrmMappingProperties(Builder builder, Node node) {
+        if (node.isNodeToNode() && Objects.nonNull(node.getDetectorModelNode()) && Objects.nonNull(node.getRefinementModelNode())) {
+            builder.setDetectorElement(convert(node.getDetectorModelNode().getValue(), node.getDetectorModelNode().getKey()));
+            builder.setRefinementElement(convert(node.getRefinementModelNode().getValue(), node.getRefinementModelNode().getKey()));
+        } else if (Objects.nonNull(node.getDetectorRelationshipNode()) && Objects.nonNull(node.getRefinementRelationshipNode())) {
+            builder.setDetectorElement(convert(node.getDetectorRelationshipNode().getValue(), node.getDetectorRelationshipNode().getKey()));
+            builder.setRefinementElement(convert(node.getRefinementRelationshipNode().getValue(), node.getRefinementRelationshipNode().getKey()));
+        }
+        //fillExtensibleElementsProperties(builder, value);
     }
 
     @SuppressWarnings( {"unchecked"})

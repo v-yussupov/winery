@@ -14,26 +14,24 @@
 
 package org.eclipse.winery.model.tosca.yaml.extensions;
 
+import java.util.HashMap;
 import java.util.List;
-
-import javax.xml.bind.annotation.XmlTransient;
+import java.util.Map;
+import java.util.Objects;
 
 import org.eclipse.winery.model.tosca.yaml.YTTopologyTemplateDefinition;
 import org.eclipse.winery.model.tosca.yaml.visitor.AbstractParameter;
 import org.eclipse.winery.model.tosca.yaml.visitor.AbstractResult;
 import org.eclipse.winery.model.tosca.yaml.visitor.IVisitor;
 
-import org.eclipse.jdt.annotation.NonNull;
-import org.eclipse.jdt.annotation.Nullable;
-
 public class YOTTopologyFragmentRefinementModel extends YOTRefinementModel {
 
     protected YTTopologyTemplateDefinition refinementStructure;
-    protected List<YOTAttributeMapping> attributeMappings;
-    protected List<YOTStayMapping> stayMappings;
-    protected List<YOTDeploymentArtifactMapping> deploymentArtifactMappings;
+    protected Map<String, YOTAttributeMapping> attributeMappings;
+    protected Map<String, YOTStayMapping> stayMappings;
+    protected Map<String, YOTDeploymentArtifactMapping> deploymentArtifactMappings;
     protected List<YOTStringList> permutationOptions;
-    protected List<YOTStringList> componentSets;
+    protected Map<String, YOTStringList> componentSets;
 
     protected YOTTopologyFragmentRefinementModel(Builder builder) {
         super(builder);
@@ -49,8 +47,6 @@ public class YOTTopologyFragmentRefinementModel extends YOTRefinementModel {
         return visitor.visit(this, parameter);
     }
 
-    @NonNull
-    @XmlTransient
     public YTTopologyTemplateDefinition getRefinementTopology() {
         if (refinementStructure == null) {
             refinementStructure = new YTTopologyTemplateDefinition.Builder().build();
@@ -66,30 +62,27 @@ public class YOTTopologyFragmentRefinementModel extends YOTRefinementModel {
         this.refinementStructure = refinementStructure;
     }
 
-    @Nullable
-    public List<YOTAttributeMapping> getAttributeMappings() {
-        return attributeMappings;
+    public Map<String, YOTAttributeMapping> getAttributeMappings() {
+        return Objects.nonNull(attributeMappings) ? attributeMappings : new HashMap<>();
     }
 
-    public void setAttributeMappings(List<YOTAttributeMapping> attributeMappings) {
+    public void setAttributeMappings(Map<String, YOTAttributeMapping> attributeMappings) {
         this.attributeMappings = attributeMappings;
     }
 
-    @Nullable
-    public List<YOTStayMapping> getStayMappings() {
-        return stayMappings;
+    public Map<String, YOTStayMapping> getStayMappings() {
+        return Objects.nonNull(stayMappings) ? stayMappings : new HashMap<>();
     }
 
-    public void setStayMappings(List<YOTStayMapping> stayMappings) {
+    public void setStayMappings(Map<String, YOTStayMapping> stayMappings) {
         this.stayMappings = stayMappings;
     }
 
-    @Nullable
-    public List<YOTDeploymentArtifactMapping> getDeploymentArtifactMappings() {
-        return deploymentArtifactMappings;
+    public Map<String, YOTDeploymentArtifactMapping> getDeploymentArtifactMappings() {
+        return Objects.nonNull(deploymentArtifactMappings) ? deploymentArtifactMappings : new HashMap<>();
     }
 
-    public void setDeploymentArtifactMappings(List<YOTDeploymentArtifactMapping> deploymentArtifactMappings) {
+    public void setDeploymentArtifactMappings(Map<String, YOTDeploymentArtifactMapping> deploymentArtifactMappings) {
         this.deploymentArtifactMappings = deploymentArtifactMappings;
     }
 
@@ -101,20 +94,20 @@ public class YOTTopologyFragmentRefinementModel extends YOTRefinementModel {
         this.permutationOptions = permutationOptions;
     }
 
-    public List<YOTStringList> getComponentSets() {
+    public Map<String, YOTStringList> getComponentSets() {
         return componentSets;
     }
 
-    public void setComponentSets(List<YOTStringList> componentSets) {
+    public void setComponentSets(Map<String, YOTStringList> componentSets) {
         this.componentSets = componentSets;
     }
 
     public static class Builder extends YOTRefinementModel.Builder<Builder> {
 
         private YTTopologyTemplateDefinition refinementStructure;
-        private List<YOTAttributeMapping> attributeMappings;
-        private List<YOTStayMapping> stayMappings;
-        private List<YOTDeploymentArtifactMapping> deploymentArtifactMappings;
+        private Map<String, YOTAttributeMapping> attributeMappings;
+        private Map<String, YOTStayMapping> stayMappings;
+        private Map<String, YOTDeploymentArtifactMapping> deploymentArtifactMappings;
         private List<YOTStringList> permutationOptions;
 
         public Builder() {
@@ -126,17 +119,17 @@ public class YOTTopologyFragmentRefinementModel extends YOTRefinementModel {
             return self();
         }
 
-        public Builder setAttributeMappings(List<YOTAttributeMapping> attributeMappings) {
+        public Builder setAttributeMappings(Map<String, YOTAttributeMapping> attributeMappings) {
             this.attributeMappings = attributeMappings;
             return self();
         }
 
-        public Builder setStayMappings(List<YOTStayMapping> stayMappings) {
+        public Builder setStayMappings(Map<String, YOTStayMapping> stayMappings) {
             this.stayMappings = stayMappings;
             return self();
         }
 
-        public Builder setDeploymentArtifactMappings(List<YOTDeploymentArtifactMapping> deploymentArtifactMappings) {
+        public Builder setDeploymentArtifactMappings(Map<String, YOTDeploymentArtifactMapping> deploymentArtifactMappings) {
             this.deploymentArtifactMappings = deploymentArtifactMappings;
             return self();
         }

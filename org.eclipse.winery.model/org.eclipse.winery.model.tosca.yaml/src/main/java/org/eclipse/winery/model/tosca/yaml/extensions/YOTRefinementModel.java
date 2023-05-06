@@ -14,7 +14,9 @@
 
 package org.eclipse.winery.model.tosca.yaml.extensions;
 
+import java.util.HashMap;
 import java.util.List;
+import java.util.Map;
 import java.util.Objects;
 
 import org.eclipse.winery.model.tosca.yaml.YTTopologyTemplateDefinition;
@@ -30,7 +32,7 @@ import org.eclipse.jdt.annotation.Nullable;
 public abstract class YOTRefinementModel implements VisitorNode {
 
     protected YTTopologyTemplateDefinition detector;
-    protected List<YOTRelationMapping> relationMappings;
+    protected Map<String, YOTRelationMapping> relationMappings;
     protected List<YOTPermutationMapping> permutationMappings;
     private Metadata metadata;
 
@@ -64,11 +66,11 @@ public abstract class YOTRefinementModel implements VisitorNode {
 
     public abstract void setRefinementTopology(YTTopologyTemplateDefinition topology);
 
-    public List<YOTRelationMapping> getRelationMappings() {
-        return relationMappings;
+    public Map<String, YOTRelationMapping> getRelationMappings() {
+        return Objects.nonNull(relationMappings) ? relationMappings : new HashMap<>();
     }
 
-    public void setRelationMappings(List<YOTRelationMapping> relationMappings) {
+    public void setRelationMappings(Map<String, YOTRelationMapping> relationMappings) {
         this.relationMappings = relationMappings;
     }
 
@@ -90,7 +92,7 @@ public abstract class YOTRefinementModel implements VisitorNode {
     public static abstract class Builder<T extends Builder<T>> {
         private List<YOTPermutationMapping> permutationMappings;
         private YTTopologyTemplateDefinition detector;
-        private List<YOTRelationMapping> relationMappings;
+        private Map<String, YOTRelationMapping> relationMappings;
         private Metadata metadata;
 
         public Builder() {
@@ -101,7 +103,7 @@ public abstract class YOTRefinementModel implements VisitorNode {
             return self();
         }
 
-        public T setRelationMappings(List<YOTRelationMapping> relationMappings) {
+        public T setRelationMappings(Map<String, YOTRelationMapping> relationMappings) {
             this.relationMappings = relationMappings;
             return self();
         }

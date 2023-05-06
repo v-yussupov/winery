@@ -82,7 +82,13 @@ import org.eclipse.winery.model.tosca.TServiceTemplate;
 import org.eclipse.winery.model.tosca.TTag;
 import org.eclipse.winery.model.tosca.TTopologyTemplate;
 import org.eclipse.winery.model.tosca.TTriggerDefinition;
+import org.eclipse.winery.model.tosca.extensions.OTBehaviorPatternMapping;
 import org.eclipse.winery.model.tosca.extensions.OTPatternRefinementModel;
+import org.eclipse.winery.model.tosca.extensions.OTPrmMapping;
+import org.eclipse.winery.model.tosca.extensions.OTRefinementModel;
+import org.eclipse.winery.model.tosca.extensions.OTRelationMapping;
+import org.eclipse.winery.model.tosca.extensions.OTStayMapping;
+import org.eclipse.winery.model.tosca.extensions.OTTopologyFragmentRefinementModel;
 import org.eclipse.winery.model.tosca.extensions.kvproperties.AttributeDefinition;
 import org.eclipse.winery.model.tosca.extensions.kvproperties.ConstraintClauseKV;
 import org.eclipse.winery.model.tosca.extensions.kvproperties.ParameterDefinition;
@@ -125,7 +131,15 @@ import org.eclipse.winery.model.tosca.yaml.YTServiceTemplate;
 import org.eclipse.winery.model.tosca.yaml.YTSubstitutionMappings;
 import org.eclipse.winery.model.tosca.yaml.YTTopologyTemplateDefinition;
 import org.eclipse.winery.model.tosca.yaml.YTTriggerDefinition;
+import org.eclipse.winery.model.tosca.yaml.extensions.YOTBehaviorPatternMapping;
 import org.eclipse.winery.model.tosca.yaml.extensions.YOTPatternRefinementModel;
+import org.eclipse.winery.model.tosca.yaml.extensions.YOTPrmMapping;
+import org.eclipse.winery.model.tosca.yaml.extensions.YOTPropertyKV;
+import org.eclipse.winery.model.tosca.yaml.extensions.YOTRefinementModel;
+import org.eclipse.winery.model.tosca.yaml.extensions.YOTRelationDirection;
+import org.eclipse.winery.model.tosca.yaml.extensions.YOTRelationMapping;
+import org.eclipse.winery.model.tosca.yaml.extensions.YOTStayMapping;
+import org.eclipse.winery.model.tosca.yaml.extensions.YOTTopologyFragmentRefinementModel;
 import org.eclipse.winery.model.tosca.yaml.support.Defaults;
 import org.eclipse.winery.model.tosca.yaml.support.Metadata;
 import org.eclipse.winery.model.tosca.yaml.support.YTMapActivityDefinition;
@@ -1171,15 +1185,102 @@ public class FromCanonical {
         }
         YOTPatternRefinementModel.Builder builder = new YOTPatternRefinementModel.Builder();
         builder.setIsPdrm(node.isPdrm());
-        builder.addMetadata("targetNamespace", node.getTargetNamespace());
-        
-        builder.setDetector(convert(node.getDetector()));
-        builder.setRefinementStructure(convert(node.getRefinementStructure()));
+        if (Objects.nonNull(node.getBehaviorPatternMappings())) {
+            builder.setBehaviorPatternMappings(
+                node.getBehaviorPatternMappings().stream()
+                    .map(this::convert)
+                    .collect(Collectors.toMap(Map.Entry::getKey, Map.Entry::getValue))
+            );
+        }
+
+        fillOTTopologyFragmentRefinementModelProperties(builder, node);
 
         return Collections.singletonMap(
             node.getName(),
             builder.build()
         );
+    }
+
+    private <Builder extends YOTTopologyFragmentRefinementModel.Builder, Node extends OTTopologyFragmentRefinementModel> void
+    fillOTTopologyFragmentRefinementModelProperties(Builder builder, Node node) {
+        builder.setRefinementStructure(convert(node.getRefinementStructure()));
+        if (Objects.nonNull(node.getStayMappings())) {
+            builder.setStayMappings(
+                node.getStayMappings().stream()
+                    .map(this::convert)
+                    .collect(Collectors.toMap(Map.Entry::getKey, Map.Entry::getValue))
+            );
+        }
+        
+        /*builder.setDeploymentArtifactMappings(convertList(value.getDeploymentArtifactMappings(), this::convert));        
+        builder.setPermutationMappings(convertList(value.getPermutationMappings(), this::convert));
+        builder.setPermutationOptions(convertList(value.getPermutationOptions(), this::convert));
+        builder.setAttributeMappings(convertList(value.getAttributeMappings(), this::convert));*/
+
+        fillOTRefinementModelProperties(builder, node);
+    }
+
+    private <Builder extends YOTRefinementModel.Builder<Builder>, Node extends OTRefinementModel> void
+    fillOTRefinementModelProperties(Builder builder, Node node) {
+        builder.setDetector(convert(node.getDetector()));
+        builder.addMetadata("targetNamespace", node.getTargetNamespace());
+        if (Objects.nonNull(node.getRelationMappings())) {
+            builder.setRelationMappings(
+                node.getRelationMappings().stream()
+                    .map(this::convert)
+                    .collect(Collectors.toMap(Map.Entry::getKey, Map.Entry::getValue))
+            );
+        }
+
+        //fillExtensibleElementsProperties(builder, value);
+    }
+
+    private Map.Entry<String, YOTBehaviorPatternMapping> convert(OTBehaviorPatternMapping node) {
+        YOTBehaviorPatternMapping.Builder builder = new YOTBehaviorPatternMapping.Builder();
+        builder.setBehaviorPattern(node.getBehaviorPattern());
+        builder.setProperty(new YOTPropertyKV(node.getProperty().getKey(), node.getProperty().getValue()));
+        fillOTPrmMappingProperties(builder, node);
+        return Map.entry(node.getId(), builder.build());
+    }
+
+    private Map.Entry<String, YOTRelationMapping> convert(OTRelationMapping node) {
+        YOTRelationMapping.Builder builder = new YOTRelationMapping.Builder();
+        builder.setDirection(YOTRelationDirection.fromValue(node.getDirection().value()));
+        builder.setRelationType(node.getRelationType());
+        builder.setValidSourceOrTarget(node.getValidSourceOrTarget());
+        fillOTPrmMappingProperties(builder, node);
+        return Map.entry(node.getId(), builder.build());
+    }
+
+    private Map.Entry<String, YOTStayMapping> convert(OTStayMapping node) {
+        YOTStayMapping.Builder builder = new YOTStayMapping.Builder();
+        fillOTPrmMappingProperties(builder, node);
+        return Map.entry(node.getId(), builder.build());
+    }
+
+    private <Builder extends YOTPrmMapping.Builder<Builder>, Node extends OTPrmMapping>
+    void fillOTPrmMappingProperties(Builder builder, Node node) {
+        if (node.getDetectorElement() instanceof TNodeTemplate && node.getRefinementElement() instanceof TNodeTemplate) {
+            Map<String, YTNodeTemplate> det = convert((TNodeTemplate) node.getDetectorElement(), new ArrayList<>());
+            if (det.entrySet().stream().findFirst().isPresent()) {
+                builder.setDetectorModelNode(det.entrySet().stream().findFirst().get());
+            }
+
+            Map<String, YTNodeTemplate> ref = convert((TNodeTemplate) node.getRefinementElement(), new ArrayList<>());
+            if (ref.entrySet().stream().findFirst().isPresent()) {
+                builder.setRefinementModelNode(ref.entrySet().stream().findFirst().get());
+            }
+        } else if (node.getDetectorElement() instanceof TRelationshipTemplate && node.getRefinementElement() instanceof TRelationshipTemplate) {
+            Map<String, YTRelationshipTemplate> det = convert((TRelationshipTemplate) node.getDetectorElement());
+            if (det.entrySet().stream().findFirst().isPresent()) {
+                builder.setDetectorRelationshipNode(det.entrySet().stream().findFirst().get());
+            }
+
+            Map<String, YTRelationshipTemplate> ref = convert((TRelationshipTemplate) node.getRefinementElement());
+            if (ref.entrySet().stream().findFirst().isPresent()) {
+                builder.setRefinementRelationshipNode(ref.entrySet().stream().findFirst().get());
+            }
+        }
     }
 
     private Map<String, YTParameterDefinition> convert(ParameterDefinition node) {

@@ -14,6 +14,11 @@
 
 package org.eclipse.winery.model.tosca.yaml.extensions;
 
+import java.util.Map;
+import java.util.Objects;
+
+import org.eclipse.winery.model.tosca.yaml.YTNodeTemplate;
+import org.eclipse.winery.model.tosca.yaml.YTRelationshipTemplate;
 import org.eclipse.winery.model.tosca.yaml.visitor.AbstractParameter;
 import org.eclipse.winery.model.tosca.yaml.visitor.AbstractResult;
 import org.eclipse.winery.model.tosca.yaml.visitor.IVisitor;
@@ -21,46 +26,95 @@ import org.eclipse.winery.model.tosca.yaml.visitor.VisitorNode;
 
 public abstract class YOTPrmMapping implements VisitorNode {
 
-    private String detectorNode;
-    private String refinementNode;
+    private Map.Entry<String, YTNodeTemplate> detectorModelNode;
+    private Map.Entry<String, YTNodeTemplate> refinementModelNode;
+
+    private Map.Entry<String, YTRelationshipTemplate> detectorRelationshipNode;
+    private Map.Entry<String, YTRelationshipTemplate> refinementRelationshipNode;
+
+    private boolean isNodeToNode;
 
     public YOTPrmMapping(Builder<?> builder) {
-        this.detectorNode = builder.detectorElement;
-        this.refinementNode = builder.refinementElement;
+        this.detectorModelNode = builder.detectorModelNode;
+        this.refinementModelNode = builder.refinementModelNode;
+
+        this.detectorRelationshipNode = builder.detectorRelationshipNode;
+        this.refinementRelationshipNode = builder.refinementRelationshipNode;
+
+        if (Objects.nonNull(this.detectorModelNode) && Objects.nonNull(this.refinementModelNode)) {
+            this.isNodeToNode = true;
+        }
     }
 
-    public String getDetectorNode() {
-        return detectorNode;
+    public Map.Entry<String, YTNodeTemplate> getDetectorModelNode() {
+        return detectorModelNode;
     }
 
-    public void setDetectorNode(String detectorNode) {
-        this.detectorNode = detectorNode;
+    public void setDetectorModelNode(Map.Entry<String, YTNodeTemplate> detectorModelNode) {
+        this.detectorModelNode = detectorModelNode;
     }
 
-    public String getRefinementNode() {
-        return refinementNode;
+    public Map.Entry<String, YTNodeTemplate> getRefinementModelNode() {
+        return refinementModelNode;
     }
 
-    public void setRefinementNode(String refinementNode) {
-        this.refinementNode = refinementNode;
+    public void setRefinementModelNode(Map.Entry<String, YTNodeTemplate> refinementModelNode) {
+        this.refinementModelNode = refinementModelNode;
+    }
+
+    public Map.Entry<String, YTRelationshipTemplate> getDetectorRelationshipNode() {
+        return detectorRelationshipNode;
+    }
+
+    public void setDetectorRelationshipNode(Map.Entry<String, YTRelationshipTemplate> detectorRelationshipNode) {
+        this.detectorRelationshipNode = detectorRelationshipNode;
+    }
+
+    public Map.Entry<String, YTRelationshipTemplate> getRefinementRelationshipNode() {
+        return refinementRelationshipNode;
+    }
+
+    public void setRefinementRelationshipNode(Map.Entry<String, YTRelationshipTemplate> refinementRelationshipNode) {
+        this.refinementRelationshipNode = refinementRelationshipNode;
+    }
+
+    public boolean isNodeToNode() {
+        return isNodeToNode;
+    }
+
+    public void setNodeToNode(boolean nodeToNode) {
+        isNodeToNode = nodeToNode;
     }
 
     public abstract <R extends AbstractResult<R>, P extends AbstractParameter<P>> R accept(IVisitor<R, P> visitor, P parameter);
 
     public static abstract class Builder<T extends Builder<T>> {
-        private String detectorElement;
-        private String refinementElement;
+        private Map.Entry<String, YTNodeTemplate> detectorModelNode;
+        private Map.Entry<String, YTNodeTemplate> refinementModelNode;
+
+        private Map.Entry<String, YTRelationshipTemplate> detectorRelationshipNode;
+        private Map.Entry<String, YTRelationshipTemplate> refinementRelationshipNode;
 
         public Builder() {
         }
-
-        public Builder<T> setDetectorElement(String detectorElement) {
-            this.detectorElement = detectorElement;
+        
+        public Builder<T> setDetectorModelNode(Map.Entry<String, YTNodeTemplate> detectorModelNode) {
+            this.detectorModelNode = detectorModelNode;
             return self();
         }
 
-        public Builder<T> setRefinementElement(String refinementElement) {
-            this.refinementElement = refinementElement;
+        public Builder<T> setRefinementModelNode(Map.Entry<String, YTNodeTemplate> refinementModelNode) {
+            this.refinementModelNode = refinementModelNode;
+            return self();
+        }
+
+        public Builder<T> setDetectorRelationshipNode(Map.Entry<String, YTRelationshipTemplate> detectorRelationshipNode) {
+            this.detectorRelationshipNode = detectorRelationshipNode;
+            return self();
+        }
+
+        public Builder<T> setRefinementRelationshipNode(Map.Entry<String, YTRelationshipTemplate> refinementRelationshipNode) {
+            this.refinementRelationshipNode = refinementRelationshipNode;
             return self();
         }
 

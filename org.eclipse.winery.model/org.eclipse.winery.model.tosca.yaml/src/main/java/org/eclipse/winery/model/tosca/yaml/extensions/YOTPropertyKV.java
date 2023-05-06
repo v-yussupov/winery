@@ -17,27 +17,10 @@ package org.eclipse.winery.model.tosca.yaml.extensions;
 import java.io.Serializable;
 import java.util.Objects;
 
-import javax.xml.bind.annotation.XmlAccessType;
-import javax.xml.bind.annotation.XmlAccessorType;
-import javax.xml.bind.annotation.XmlAttribute;
-import javax.xml.bind.annotation.XmlType;
-
-import org.eclipse.jdt.annotation.NonNull;
-
-@XmlAccessorType(XmlAccessType.FIELD)
-@XmlType(name = "otPropertyKv")
 public class YOTPropertyKV implements Serializable {
 
-    @XmlAttribute(name = "key", required = true)
-    @NonNull
     private String key;
-    @XmlAttribute(name = "value", required = true)
-    @NonNull
     private String value;
-
-    @Deprecated // used for XML deserialization of API request content
-    public YOTPropertyKV() {
-    }
 
     public YOTPropertyKV(String key, String value) {
         this.key = key;

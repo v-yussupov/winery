@@ -79,6 +79,7 @@ import org.eclipse.winery.model.tosca.yaml.extensions.YOTBehaviorPatternMapping;
 import org.eclipse.winery.model.tosca.yaml.extensions.YOTDeploymentArtifactMapping;
 import org.eclipse.winery.model.tosca.yaml.extensions.YOTPatternRefinementModel;
 import org.eclipse.winery.model.tosca.yaml.extensions.YOTPermutationMapping;
+import org.eclipse.winery.model.tosca.yaml.extensions.YOTPrmMapping;
 import org.eclipse.winery.model.tosca.yaml.extensions.YOTRelationMapping;
 import org.eclipse.winery.model.tosca.yaml.extensions.YOTStayMapping;
 import org.eclipse.winery.model.tosca.yaml.extensions.YOTTopologyFragmentRefinementModel;
@@ -640,6 +641,18 @@ public class YamlWriter extends AbstractVisitor<YamlPrinter, YamlWriter.Paramete
             printer.print(printVisitorNode(node.getRefinementStructure(), parameter.addContext(YamlExtensionKeywords.REFINEMENT_STRUCTURE)));
         }
 
+        if (Objects.nonNull(node.getStayMappings())) {
+            printer.print(printMap(YamlExtensionKeywords.STAY_MAPPINGS, node.getStayMappings(), parameter));
+        }
+
+        if (Objects.nonNull(node.getBehaviorPatternMappings())) {
+            printer.print(printMap(YamlExtensionKeywords.BEHAVIOR_MAPPINGS, node.getBehaviorPatternMappings(), parameter));
+        }
+
+        if (Objects.nonNull(node.getRelationMappings())) {
+            printer.print(printMap(YamlExtensionKeywords.RELATION_MAPPINGS, node.getRelationMappings(), parameter));
+        }
+
         return printer;
     }
 
@@ -650,9 +663,11 @@ public class YamlWriter extends AbstractVisitor<YamlPrinter, YamlWriter.Paramete
     }
 
     public YamlPrinter visit(YOTBehaviorPatternMapping node, Parameter parameter) {
-        return new YamlPrinter(parameter.getIndent());
-        //.print(printMap(YamlSpecKeywords.PROPERTIES, node.getProperties(), parameter))
-        //.print(printMap(YamlSpecKeywords.INTERFACES, node.getInterfaces(), parameter));
+        YamlPrinter printer = new YamlPrinter(parameter.getIndent());
+        printer.printKeyValue(YamlExtensionKeywords.BEHAVIOR_PATTERN, node.getBehaviorPattern());
+        printPrmMappingProperties(printer, node, parameter);
+
+        return printer;
     }
 
     public YamlPrinter visit(YOTDeploymentArtifactMapping node, Parameter parameter) {
@@ -662,15 +677,33 @@ public class YamlWriter extends AbstractVisitor<YamlPrinter, YamlWriter.Paramete
     }
 
     public YamlPrinter visit(YOTRelationMapping node, Parameter parameter) {
-        return new YamlPrinter(parameter.getIndent());
-        //.print(printMap(YamlSpecKeywords.PROPERTIES, node.getProperties(), parameter))
-        //.print(printMap(YamlSpecKeywords.INTERFACES, node.getInterfaces(), parameter));
+        YamlPrinter printer = new YamlPrinter(parameter.getIndent());
+        if (Objects.nonNull(node.getDirection())) {
+            printer.printKeyValue(YamlExtensionKeywords.DIRECTION, node.getDirection().value());
+        }
+        if (Objects.nonNull(node.getRelationType())) {
+            printer.printKeyValue(YamlExtensionKeywords.RELATION_TYPE, node.getRelationType());
+        }
+        printPrmMappingProperties(printer, node, parameter);
+
+        return printer;
     }
 
     public YamlPrinter visit(YOTStayMapping node, Parameter parameter) {
-        return new YamlPrinter(parameter.getIndent());
-        //.print(printMap(YamlSpecKeywords.PROPERTIES, node.getProperties(), parameter))
-        //.print(printMap(YamlSpecKeywords.INTERFACES, node.getInterfaces(), parameter));
+        YamlPrinter printer = new YamlPrinter(parameter.getIndent());
+        printPrmMappingProperties(printer, node, parameter);
+
+        return printer;
+    }
+
+    private void printPrmMappingProperties(YamlPrinter printer, YOTPrmMapping node, Parameter parameter) {
+        if (node.isNodeToNode()) {
+            printer.printKeyValue(YamlExtensionKeywords.DETECTOR_NODE, node.getDetectorModelNode().getKey())
+                .printKeyValue(YamlExtensionKeywords.REFINEMENT_NODE, node.getRefinementModelNode().getKey());
+        } else {
+            printer.printKeyValue(YamlExtensionKeywords.DETECTOR_NODE, node.getDetectorRelationshipNode().getKey())
+                .printKeyValue(YamlExtensionKeywords.REFINEMENT_NODE, node.getRefinementRelationshipNode().getKey());
+        }
     }
 
     public YamlPrinter visit(YOTPermutationMapping node, Parameter parameter) {

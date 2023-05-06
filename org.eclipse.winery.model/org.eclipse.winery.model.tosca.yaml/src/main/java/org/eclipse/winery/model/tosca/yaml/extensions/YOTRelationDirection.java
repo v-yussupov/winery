@@ -23,9 +23,7 @@ import org.eclipse.jdt.annotation.Nullable;
 
 public enum YOTRelationDirection implements Serializable {
 
-    @XmlEnumValue("ingoing")
     INGOING("ingoing"),
-    @XmlEnumValue("outgoing")
     OUTGOING("outgoing");
     private final String value;
 
