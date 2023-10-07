@@ -298,6 +298,11 @@
                         [style.background-color]="getStyle(navbarButtonsState.buttonsState.hideDependsOnRelations)">
                     Hide DependsOn Relations
                 </button>
+                <button class="btn btn-sm align-middle dark-button-style"
+                        (click)="generateFaastenerQuery()"
+                        [disabled]="!selectedNodeTemplateIds || selectedNodeTemplateIds.length === 0">
+                    Generate Technology Query
+                </button>
             </div>
 
             <div *ngIf="showVersionSliderButton" class="btn-group button-group" data-toggle="buttons">

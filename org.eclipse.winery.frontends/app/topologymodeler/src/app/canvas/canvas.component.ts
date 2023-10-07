@@ -2431,6 +2431,8 @@ export class CanvasComponent implements OnInit, OnDestroy, OnChanges, AfterViewI
         this.unbindConnection();
         if (this.selectedNodes.length === 1 && this.selectedNodes.find((node) => node.id !== nodeId)) {
             this.clearSelectedNodes();
+            const n = this.allNodeTemplates.find((node) => node.id === nodeId);
+            this.ngRedux.dispatch(this.topologyRendererActions.setSelectedNodes([n.id]));
         }
         if (this.selectedNodes.length === 0) {
             this.enhanceDragSelection(nodeId);

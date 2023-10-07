@@ -24,12 +24,8 @@ import { Hotkey, HotkeysService } from 'angular2-hotkeys';
 import { TopologyRendererState } from '../redux/reducers/topologyRenderer.reducer';
 import { WineryActions } from '../redux/actions/winery.actions';
 import { StatefulAnnotationsService } from '../services/statefulAnnotations.service';
-import {
-    FeatureEnum
-} from '../../../../tosca-management/src/app/wineryFeatureToggleModule/wineryRepository.feature.direct';
-import {
-    WineryRepositoryConfigurationService
-} from '../../../../tosca-management/src/app/wineryFeatureToggleModule/WineryRepositoryConfiguration.service';
+import { FeatureEnum } from '../../../../tosca-management/src/app/wineryFeatureToggleModule/wineryRepository.feature.direct';
+import { WineryRepositoryConfigurationService } from '../../../../tosca-management/src/app/wineryFeatureToggleModule/WineryRepositoryConfiguration.service';
 import { TTopologyTemplate } from '../models/ttopology-template';
 import { OverlayService } from '../services/overlay.service';
 import { BsModalRef } from 'ngx-bootstrap';
@@ -38,6 +34,7 @@ import { VersionSliderService } from '../version-slider/version-slider.service';
 import { CheService } from '../services/che.service';
 import { TopologyModelerConfiguration } from '../models/topologyModelerConfiguration';
 import { EntityTypesModel } from '../models/entityTypesModel';
+import { FaastenerService } from '../services/faastener.service';
 
 /**
  * The navbar of the topologymodeler.
@@ -67,6 +64,7 @@ export class NavbarComponent implements OnDestroy {
 
     navbarButtonsState: TopologyRendererState;
     currentTopologyTemplate: TTopologyTemplate;
+    selectedNodeTemplateIds: string[] = [];
     subscriptions: Array<Subscription> = [];
     exportCsarUrl: string;
     splittingOngoing: boolean;
@@ -93,9 +91,12 @@ export class NavbarComponent implements OnDestroy {
                 private topologyService: TopologyService,
                 public configurationService: WineryRepositoryConfigurationService,
                 private versionSliderService: VersionSliderService,
-                private che: CheService) {
+                private che: CheService,
+                private faastener: FaastenerService) {
         this.subscriptions.push(ngRedux.select((state) => state.topologyRendererState)
             .subscribe((newButtonsState) => this.setButtonsState(newButtonsState)));
+        this.ngRedux.select(state => state.topologyRendererState.selectedNodes)
+            .subscribe(nodeIds => this.selectedNodeTemplateIds = nodeIds);
         this.subscriptions.push(ngRedux.select((currentState) => currentState.wineryState.currentJsonTopology)
             .subscribe((topologyTemplate) => this.currentTopologyTemplate = topologyTemplate));
         this.subscriptions.push(ngRedux.select((currentState) => currentState.wineryState.unsavedChanges)
@@ -381,5 +382,14 @@ export class NavbarComponent implements OnDestroy {
             this.backendService.configuration.ns,
             'servicetemplates'
         );
+    }
+
+    generateFaastenerQuery() {
+        if (!this.selectedNodeTemplateIds || this.selectedNodeTemplateIds.length > 1) {
+            this.alert.info('<p>Only one node must be selected! <br>' + 'Please, select one node and repeat the action again. ' +
+                '</p>');
+        } else {
+            this.faastener.sendToscaModel(this.currentTopologyTemplate, this.selectedNodeTemplateIds);
+        }
     }
 }

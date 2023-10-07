@@ -70,6 +70,7 @@ export interface TopologyRendererState {
         checkNodePropertiesButton?: boolean;
         assignDeploymentTechnologyButton?: boolean;
         hideDependsOnRelations?: boolean;
+        generateTechnologyQuery?: boolean;
         detectPatternsButton?: boolean;
     };
     activeResearchPlugin: ResearchPlugin;
