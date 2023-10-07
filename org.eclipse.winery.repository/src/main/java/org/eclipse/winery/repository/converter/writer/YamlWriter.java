@@ -633,6 +633,8 @@ public class YamlWriter extends AbstractVisitor<YamlPrinter, YamlWriter.Paramete
         YamlPrinter printer = new YamlPrinter(parameter.getIndent())
             .printKeyValue(YamlExtensionKeywords.IS_PDRM, node.isPdrm());
 
+        printer.print(node.getMetadata().accept(this, parameter));
+        
         if (Objects.nonNull(node.getDetector()) && !node.getDetector().getNodeTemplates().isEmpty() && !node.getDetector().getRelationshipTemplates().isEmpty()) {
             printer.print(printVisitorNode(node.getDetector(), parameter.addContext(YamlExtensionKeywords.DETECTOR)));
         }

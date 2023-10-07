@@ -1345,6 +1345,8 @@ public class YamlBuilder {
         Map<String, Object> map = (Map<String, Object>) object;
         YOTPatternRefinementModel.Builder builder = new YOTPatternRefinementModel.Builder();
         builder.setIsPdrm(Boolean.parseBoolean(stringValue(map.get(YamlExtensionKeywords.IS_PDRM))));
+        
+        builder.setMetadata(buildMetadata(map.get(YamlSpecKeywords.METADATA)));
 
         YTTopologyTemplateDefinition detector = buildTopologyTemplate(
             map.get(YamlExtensionKeywords.DETECTOR),

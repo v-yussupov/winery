@@ -1191,7 +1191,39 @@ public class ToCanonical {
             .collect(Collectors.toList()));
         fillOTTopologyFragmentRefinementModelProperties(builder, node, name);
 
-        return builder.build();
+        OTPatternRefinementModel result = builder.build();
+        fixRelationshipTemplates(result.getDetector());
+        fixRelationshipTemplates(result.getRefinementStructure());
+
+        return result;
+    }
+
+    private void fixRelationshipTemplates(TTopologyTemplate topologyTemplate) {
+        Map<String, TNodeTemplate> nodeTemplates = new HashMap<>();
+        Map<String, String[]> relationshipNodes = new HashMap<>();
+
+        topologyTemplate.getNodeTemplates()
+            .forEach(nt -> {
+                nodeTemplates.put(nt.getId(), nt);
+                if (Objects.nonNull(nt.getRequirements())) {
+                    nt.getRequirements().forEach(req -> {
+                        String[] sourceTarget = new String[2];
+                        sourceTarget[0] = nt.getId();
+                        sourceTarget[1] = req.getNode();
+                        relationshipNodes.put(req.getRelationship(), sourceTarget);
+                    });
+                }
+            });
+
+        topologyTemplate.getRelationshipTemplates()
+            .forEach(rt -> {
+                String relationshipName = rt.getId();
+                String sourceName = relationshipNodes.get(relationshipName)[0];
+                String targetName = relationshipNodes.get(relationshipName)[1];
+
+                rt.setSourceNodeTemplate(nodeTemplates.get(sourceName));
+                rt.setTargetNodeTemplate(nodeTemplates.get(targetName));
+            });
     }
 
     private <Builder extends OTTopologyFragmentRefinementModel.RefinementBuilder<Builder>, Node extends YOTTopologyFragmentRefinementModel> void fillOTTopologyFragmentRefinementModelProperties(Builder builder, Node node, String name) {
