@@ -52,6 +52,7 @@ export interface SimplifiedRelationshipTemplate {
 })
 export class FaastenerService {
     readonly FAASTENER_URL: string = 'http://localhost:8082/api/search-queries';
+    readonly FAASTENER_GUI_URL: string = 'http://localhost:4300/technologies';
 
     constructor(private http: HttpClient,
                 private toastrService: ToastrService) {
@@ -60,9 +61,16 @@ export class FaastenerService {
     private static buildQueryGenerationRequest(topology: TTopologyTemplate, selectedNodeTemplateIds: string[]): QueryGenerationRequest {
         const nodes: SimplifiedNodeTemplate[] = [];
         const rels: SimplifiedRelationshipTemplate[] = [];
+        const capMap = {};
+        const reqMap = {};
+
+        console.log(topology);
 
         topology.nodeTemplates.map(
             nt => {
+                nt.requirements.forEach(req => reqMap[req.id] = nt.id);
+                nt.capabilities.forEach(cap => capMap[cap.id] = nt.id);
+
                 const cur: SimplifiedNodeTemplate = {
                     id: nt.id,
                     name: nt.name,
@@ -79,8 +87,8 @@ export class FaastenerService {
                     id: rt.id,
                     name: rt.name,
                     type: rt.type,
-                    sourceElementRef: rt.sourceElement.ref,
-                    targetElementRef: rt.targetElement.ref,
+                    sourceElementRef: reqMap[rt.sourceElement.ref],
+                    targetElementRef: capMap[rt.targetElement.ref],
                     properties: rt.properties['properties']
                 };
                 rels.push(cur);
@@ -104,8 +112,21 @@ export class FaastenerService {
         try {
             const request: QueryGenerationRequest = FaastenerService.buildQueryGenerationRequest(topology, selectedNodeTemplateIds);
 
-            const techSearchUrl = await this.http.post<FaastenerResponse>(this.FAASTENER_URL, request).toPromise();
-            window.open(techSearchUrl.url, '_blank');
+            const apiQuery = await this.http.post<FaastenerResponse>(this.FAASTENER_URL, request).toPromise();
+            const techs: any = await this.http.get(apiQuery.url).toPromise();
+
+            console.log(techs);
+
+            if (techs.length > 0) {
+                let query = '?';
+                for (const tech of techs) {
+                    query += 'id=' + tech.id + '&';
+                }
+                query.substr(0, query.length - 1);
+                window.open(this.FAASTENER_GUI_URL + query, '_blank');
+            }
+
+            // window.open(apiQuery.url, '_blank');
         } catch (err) {
             if (err instanceof HttpErrorResponse) {
                 if (err.status === 500) {
